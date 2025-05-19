@@ -1,18 +1,15 @@
-import React, { useContext, useEffect, useState } from "react"
-import { AppContext } from "../content/AppContext"
+import React, { useState } from "react"
 import { assets, JobCategories, JobLocations } from "../assets/assets"
 import JobCard from "./JobCard"
 
-const JobListing = () =>{
-
-    const {isSearched, searchFilter, setSearchFilter, jobs} = useContext(AppContext)
-
-    const  [showFilter, setShowFilter] = useState(false)
+const JobListing = ({ jobs = [] }) => {
+    // Remove AppContext usage, expect jobs as a prop (default to empty array)
+    const [showFilter, setShowFilter] = useState(false)
     const [currentPage, setCurrentPage] = useState(1)
     const [selectedCategories,setSelectedCategories] = useState([])
     const [selectedLocations, setSelectedLocations] = useState([])
-
-    const [filteredJobs, setFilteredJobs] = useState(jobs)
+    const [searchFilter, setSearchFilter] = useState({ title: '', location: '' })
+    const [isSearched, setIsSearched] = useState(false)
 
     const handleCategoryChange = (category) => {
         setSelectedCategories(
@@ -26,30 +23,18 @@ const JobListing = () =>{
         )
     }
 
-    useEffect(() => {
-
-        const matchesCategory = job => selectedCategories.length === 0  || selectedCategories.includes(job.category)
-
-        const matchesLocation = job => selectedLocations.length === 0  || selectedLocations.includes(job.location)
-
-        const matchesTitle = job => searchFilter.title === ""  || job.title.toLowerCase().includes(searchFilter.title.toLowerCase())
-
-        const matchesSearchLocation = job =>  searchFilter.location === "" || job.location.toLowerCase().includes(searchFilter.location.toLowerCase())
-
-        const newFilteredJobs= jobs.slice().reverse().filter(
-            job => matchesCategory(job) && matchesLocation(job) && matchesTitle(job) && matchesSearchLocation(job)
-        )
-
-        setFilteredJobs(newFilteredJobs)
-        setCurrentPage(1)
-    },[jobs, selectedCategories, selectedLocations, searchFilter])
+    // Filter jobs locally
+    const filteredJobs = jobs
+        .filter(job => selectedCategories.length === 0 || selectedCategories.includes(job.category))
+        .filter(job => selectedLocations.length === 0 || selectedLocations.includes(job.location))
+        .filter(job => searchFilter.title === '' || job.title.toLowerCase().includes(searchFilter.title.toLowerCase()))
+        .filter(job => searchFilter.location === '' || job.location.toLowerCase().includes(searchFilter.location.toLowerCase()))
+        .reverse();
 
     return(
         <div className="container 2xl:px-20 mx-auto flex flex-col lg:flex-row max-lg-space-y-8 py-8">
-
             {/* Sidebar */}
             <div className="w-full lg:w-1/4 bg-white px-4">
-
                 {/* Search Filter from Hero Component */}
                 {
                     isSearched && (searchFilter.title !== "" || searchFilter.location !== "") && (
@@ -72,11 +57,9 @@ const JobListing = () =>{
                         </>
                     )
                 }
-
                 <button onClick={e => setShowFilter(prev => !prev)} className="px-6 py-1.5 rounded border border-gray-400 lg:hidden">
                     {showFilter ? "Close" : "Filters"}
                 </button>
-
                 {/* Category Filter */}
                 <div className={showFilter ? "" : "max-lg:hidden"}>
                     <h4 className="font-medium text-lg py-4">Search by Categories</h4>
@@ -96,7 +79,6 @@ const JobListing = () =>{
                         }
                     </ul>
                 </div>
-
                 {/* location Filter */}
                 <div className={showFilter ? "" : "max-lg:hidden"}>
                     <h4 className="font-medium text-lg py-4 pt-14">Search by Location</h4>
@@ -117,7 +99,6 @@ const JobListing = () =>{
                     </ul>
                 </div>
             </div>
-
             {/* Job listings */}
             <section className="w-full lg:w-3/4 text-gray-800 max-lg:px-4">
                 <h3 className="font-medium text-3xl py-2" id="job-list">Latest jobs</h3>
@@ -127,13 +108,11 @@ const JobListing = () =>{
                         <JobCard key={index} job={job}></JobCard>
                     ))}
                 </div>
-
-
                 {/* Pagination */}
                 {filteredJobs.length > 0 && (
                     <div className="flex items-center justify-center space-x-2 mt-10">
                         <a  href="#job-list">
-                            <img onClick={() => setCurrentPage(Math.max(currentPage-1),1)} src={assets.left_arrow_icon} alt=""></img>
+                            <img onClick={() => setCurrentPage(Math.max(currentPage-1,1))} src={assets.left_arrow_icon} alt=""></img>
                         </a>
                         {Array.from({length:Math.ceil(filteredJobs.length/6)}).map((_,index) =>(
                             <a key={index} href="#job-list">
@@ -145,7 +124,6 @@ const JobListing = () =>{
                         </a>
                 </div>
                 )}
-
             </section>
         </div>
     )

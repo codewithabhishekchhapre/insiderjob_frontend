@@ -1,40 +1,35 @@
-import {useContext } from 'react'
+import { useState } from 'react'
 import {Route, Routes} from 'react-router-dom'
 import Home from './pages/Home'
-import ApplyJob from './pages/ApplyJob'
-import Applications from './pages/Applications'
-import RecruiterLogin from './component/RecruiterLogin'
-import { AppContext } from './content/AppContext'
-import Dashboard from './pages/Dashboard'
-import AddJob from './pages/AddJob'
-import ManageJobs from './pages/ManageJobs'
-import ViewApplications from './pages/ViewApplications'
 import  'quill/dist/quill.snow.css'
 import {ToastContainer} from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css';
+import Login from './component/Login'
+import AdminDashboard from './pages/AdminDashboard/AdminDashboard'
+import RecruiterDashboard from './pages/RecruiterDashboard/RecruiterDashboard'
+import UserDashboard from './pages/UserDashboard/UserDashboard'
+import JobListingPage from './pages/JobListingPage'
+import ApplyJob from './pages/UserDashboard/ApplyJob'
 
 const App = () => {
-  
-  const {showRecruiterLogin, companyToken} = useContext(AppContext)
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  // Pass this function to all pages that use Navbar
+  const handleLoginClick = () => setShowLoginModal(true);
 
   return (
     <div>
-      { showRecruiterLogin && <RecruiterLogin/>}
       <ToastContainer />
+      {showLoginModal && (
+        <Login onClose={() => setShowLoginModal(false)} />
+      )}
       <Routes>
-        <Route path='/' element={<Home/>}></Route>
-        <Route path='/apply-job/:id' element={<ApplyJob/>}></Route>
-        {/* <Route path='/applications/:id' element={<Applications/>}></Route> */}
-        <Route path='/applications' element={<Applications/>}></Route>
-        <Route path='/dashboard' element={<Dashboard/>}>
-        {
-        companyToken ? <>
-          <Route path='add-job' element={<AddJob/>} />
-          <Route path='manage-jobs' element={<ManageJobs/>} />
-          <Route path='view-applications' element={<ViewApplications/>} />
-        </> : null
-        } 
-        </Route>
+        <Route path='/' element={<Home onLoginClick={handleLoginClick} />}></Route>
+        <Route path='/admin' element={<AdminDashboard onLoginClick={handleLoginClick} />} />
+        <Route path='/recruiter' element={<RecruiterDashboard onLoginClick={handleLoginClick} />} />
+        <Route path='/user' element={<UserDashboard onLoginClick={handleLoginClick} />} />
+        <Route path='/jobs' element={<JobListingPage onLoginClick={handleLoginClick} />} />
+        <Route path='/apply-job/:id' element={<ApplyJob onLoginClick={handleLoginClick} />} />
       </Routes>
     </div>
   )
